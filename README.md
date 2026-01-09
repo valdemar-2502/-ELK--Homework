@@ -37,10 +37,10 @@
 Установите и запустите Elasticsearch, после чего поменяйте параметр cluster_name на случайный. 
 
 *Приведите скриншот команды 'curl -X GET 'localhost:9200/_cluster/health?pretty', сделанной на сервере с установленным Elasticsearch. Где будет виден нестандартный cluster_name*.
-### Решение
----
+### Решение 
 Скриншот скриншот команды 'curl -X GET 'localhost:9200/_cluster/health?pretty'
-![elastic](https://github.com/valdemar-2502/Redis-memcached-Homework/blob/main/memcached1.png)
+---
+![elastic](https://github.com/valdemar-2502/-ELK--Homework/blob/main/elastic1.png)
 ---
 
 ### Задание 2. Kibana
@@ -48,7 +48,11 @@
 Установите и запустите Kibana.
 
 *Приведите скриншот интерфейса Kibana на странице http://<ip вашего сервера>:5601/app/dev_tools#/console, где будет выполнен запрос GET /_cluster/health?pretty*.
-![elastic-kibana](https://github.com/valdemar-2502/Redis-memcached-Homework/blob/main/memcached1.png)
+### Решение 
+---
+Cкриншот интерфейса Kibana на странице http://<ip вашего сервера>:5601/app/dev_tools#/console, где выполнен запрос GET /_cluster/health?pretty*.
+---
+![elastic-kibana](https://github.com/valdemar-2502/-ELK--Homework/blob/main/elastic-kibana.png)
 ---
 
 ### Задание 3. Logstash
@@ -56,7 +60,11 @@
 Установите и запустите Logstash и Nginx. С помощью Logstash отправьте access-лог Nginx в Elasticsearch. 
 
 *Приведите скриншот интерфейса Kibana, на котором видны логи Nginx.*
-![elastic-kibana](https://github.com/valdemar-2502/Redis-memcached-Homework/blob/main/memcached1.png)
+### Решение 
+---
+Cкриншот интерфейса Kibana, на котором видны логи Nginx.*
+---
+![elastic-logstrash-nginx](https://github.com/valdemar-2502/-ELK--Homework/blob/main/elastic-logstrash-nginx.png)
 ---
 
 ### Задание 4. Filebeat. 
@@ -64,7 +72,11 @@
 Установите и запустите Filebeat. Переключите поставку логов Nginx с Logstash на Filebeat. 
 
 *Приведите скриншот интерфейса Kibana, на котором видны логи Nginx, которые были отправлены через Filebeat.*
-![elastic-kibana](https://github.com/valdemar-2502/Redis-memcached-Homework/blob/main/memcached1.png)
+### Решение 
+---
+Cкриншот интерфейса Kibana, на котором видны логи Nginx, которые были отправлены через Filebeat.*
+---
+![elastic-filebeat](https://github.com/valdemar-2502/-ELK--Homework/blob/main/elastic-filebeat.png)
 
 ## Дополнительные задания (со звёздочкой*)
 Эти задания дополнительные, то есть не обязательные к выполнению, и никак не повлияют на получение вами зачёта по этому домашнему заданию. Вы можете их выполнить, если хотите глубже шире разобраться в материале.
