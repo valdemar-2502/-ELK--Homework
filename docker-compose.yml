@@ -131,10 +131,10 @@ services:
       echo 'Setup completed!' &&
       echo '' &&
       echo '=== ACCESS URLs ===' &&
-      echo '1. Kibana:          http://192.168.88.22:5601' &&
-      echo '2. Nginx (Logstash): http://192.168.88.22:8080' &&
-      echo '3. Nginx (Filebeat): http://192.168.88.22:8081' &&
-      echo '4. Elasticsearch:    http://192.168.88.22:9200' &&
+      echo '1. Kibana:          http://ВАШ IP:5601' &&
+      echo '2. Nginx (Logstash): http://ВАШ IP:8080' &&
+      echo '3. Nginx (Filebeat): http://ВАШ IP:8081' &&
+      echo '4. Elasticsearch:    http://ВАШ IP:9200' &&
       echo '' &&
       echo '=== FOR TASK 2 ===' &&
       echo 'Open Kibana Dev Tools and run: GET /_cluster/health?pretty' &&
