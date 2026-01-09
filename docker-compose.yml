@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=Kadancev Vladimir
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elk
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 | grep -q 'You Know, for Search'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601 | grep -q 'Kibana'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./nginx/logs:/var/log/nginx:ro
+    environment:
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+    ports:
+      - "5044:5044"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+      - kibana
+    command: >
+      bash -c "
+      echo 'Waiting for Elasticsearch...' &&
+      until curl -s http://elasticsearch:9200 >/dev/null; do sleep 5; done &&
+      echo 'Starting Logstash...' &&
+      /usr/local/bin/docker-entrypoint
+      "
+  nginx-logstash:
+    image: nginx:alpine
+    container_name: nginx-logstash
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/nginx-logstash.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - elk
+    depends_on:
+      - logstash
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.0
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./nginx/logs-filebeat:/var/log/nginx:ro
+      - filebeat_data:/usr/share/filebeat/data
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+      - kibana
+    command: >
+      bash -c "
+      echo 'Waiting for Elasticsearch...' &&
+      until curl -s http://elasticsearch:9200 >/dev/null; do sleep 5; done &&
+      echo 'Starting Filebeat...' &&
+      filebeat -e -strict.perms=false
+      "
+  nginx-filebeat:
+    image: nginx:alpine
+    container_name: nginx-filebeat
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/logs-filebeat:/var/log/nginx
+      - ./nginx/nginx-filebeat.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - elk
+    depends_on:
+      - filebeat
+  setup:
+    image: alpine:latest
+    container_name: elk-setup
+    volumes:
+      - ./scripts:/scripts
+    networks:
+      - elk
+    depends_on:
+      - kibana
+      - nginx-logstash
+      - nginx-filebeat
+    command: >
+      sh -c "
+      echo '=== ELK Stack Setup Started ===' &&
+      echo 'Waiting for services...' &&
+      sleep 45 &&
+      echo 'Generating test traffic...' &&
+      /scripts/generate-traffic.sh &&
+      echo 'Setup completed!' &&
+      echo '' &&
+      echo '=== ACCESS URLs ===' &&
+      echo '1. Kibana:          http://192.168.88.22:5601' &&
+      echo '2. Nginx (Logstash): http://192.168.88.22:8080' &&
+      echo '3. Nginx (Filebeat): http://192.168.88.22:8081' &&
+      echo '4. Elasticsearch:    http://192.168.88.22:9200' &&
+      echo '' &&
+      echo '=== FOR TASK 2 ===' &&
+      echo 'Open Kibana Dev Tools and run: GET /_cluster/health?pretty' &&
+      echo '' &&
+      echo '=== FOR TASK 3 ===' &&
+      echo 'Create index pattern: logstash-nginx-*' &&
+      echo '' &&
+      echo '=== FOR TASK 4 ===' &&
+      echo 'Create index pattern: filebeat-nginx-*' &&
+      tail -f /dev/null
+      "
+
+volumes:
+  es_data:
+    driver: local
+  filebeat_data:
+    driver: local
+
+networks:
+  elk:
+    driver: bridge
